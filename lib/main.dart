@@ -34,8 +34,8 @@ class MyApp extends StatelessWidget {
                 width: double.infinity,
                 child: CircularIndicator(
                   indicatorColor: Colors.pink,
-                  raduis: 150,
-                  strokeWidth: 50,
+                  raduis: 100,
+                  strokeWidth: 30,
                   isAnimated: true,
                   animationTime: 4,
                 ),

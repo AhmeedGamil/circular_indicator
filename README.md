@@ -37,6 +37,7 @@ Here’s how `_rotationAngle` is calculated:
 ```dart
 _rotationAngle = 360 / (radius * 2 * pi);
 ```
+Which is the minimum step to rotate
 
 ### Stage 2: Reconstructing the Full Circle
 
@@ -117,12 +118,17 @@ Using only `endPointsPerFrame` slices from the start of the list up to that inde
 
 ### But There Is A Problem With This
 
-Flutter clears the canvas each frame. If you don’t save previous content, you're forced to redraw all previous and new points each time, which slows performance.
+Flutter clears the canvas each frame if should repaint is true. If you don’t save previous content, you're forced to redraw all previous and new points each time, which slows performance.
+When using Flutter to draw a large number of points each frame, performance issues arise due to both CPU-GPU communication overhead and the inefficiency of drawing individual points. Here's the core reasoning:
+CPU to GPU Communication: Sending a large number of points from the CPU to the GPU creates an overhead, especially if it happens every frame.
+GPU's Optimized Spatial Rendering: The GPU works most efficiently when rendering larger shapes (e.g., rectangles or triangles) rather than individual points. Processing each point separately increases the GPU's workload.
+DrawRawPoints Inefficiency: Methods like drawRawPoints() treat each point independently, which results in high overhead, especially for large sets of points.
 
 ## The Solution
 
 - Use `AnimatedBuilder` to control frame drawing.
 - Save previous canvas content as an image and reuse it.
+There are other methods to optimize, but they do not align with my goal, which is to send raw points and draw them
 
 ```dart
 Future<void> saveCanvasToImage(Size size) async {
@@ -147,6 +153,7 @@ I successfully achieved smooth animation for the circular indicator! (Note: The 
 
 ![Circular Indicator Animation](circular_indicator.gif)
 
+This was tested on the Qualcomm Snapdragon 865 (considered a high-end processor in 2020) and the MediaTek Helio G80 (considered a mid-range processor in 2020), and both ran smoothly at 60 fps.
 ## Considerations
 
 1. **Aliasing at the Edges**
@@ -171,7 +178,7 @@ I successfully achieved smooth animation for the circular indicator! (Note: The 
    In the end the CPU only takes the half of the wheel. This gap is gonna be small in the future due to the development of CPUs. In the era of quantum computing we may not need GPUs.
 ## Why Do We Even Have a GPU?
 
-We all know the answer: the GPU complements the CPU by handling tasks the CPU isn't optimized for. I was shocked by the poor performance of the CPU before I made the optimization. When using the custom painter canvas to draw a circular indicator with animation, the canvas not saving the previous drawing so each frame the canvas clears its content and starts drawing again. That’s ok if we use canvas methods which are estimating the point in the GPU, as the estimation on the GPU is very fast because of parallel processing. In the CPU, we send the points to the canvas, and the canvas uses `drawPoint` or `drawRawPoint`, which are not optimal for drawing a large number of points, even on the GPU because the GPU draws each point one by one, and the mechanics that the GPU follows to draw is different and makes it slower.
+We all know the answer: the GPU complements the CPU by handling tasks the CPU isn't optimized for. I was shocked by the poor performance before I made the optimization. When using the custom painter canvas to draw a circular indicator with animation, the canvas not saving the previous drawing so each frame the canvas clears its content and starts drawing again. That’s ok if we use canvas methods which are estimating the point in the GPU, as the estimation on the GPU is very fast because of parallel processing. In the CPU, we send the points to the canvas, and the canvas uses `drawPoint` or `drawRawPoint`, which are not optimal for drawing a large number of points, even on the GPU because the GPU draws each point one by one, and the mechanics that the GPU follows to draw is different and makes it slower.
 
 ## Conclusion
 
@@ -181,6 +188,3 @@ Using the CPU to estimate UI points makes sense only if:
 - The number of points is small.
 - GPU is unavailable or not ideal for the task.
 
-Think of the GPU as the economic minister to the CPU’s president. The president (CPU) focuses on big-picture decisions and delegates specialized tasks (like graphics) to the minister (GPU).
-
-As Jensen Huang said when starting NVIDIA, they looked at what CPUs were good at—and what they weren't.

@@ -1,8 +1,8 @@
 
 # Circular Indicator Rendering Using CPU and GPU
 
-What if the CPU took the wheel? That question haunted me. So, I set out to build a circular indicator from the ground up—calculating every point manually on the CPU, then handing it off to the GPU for rendering alone. No shortcuts. No crutches. Just raw computation. Could modern mobile CPUs survive the storm of geometry under pressure? This wasn’t just an experiment—it was a challenge to the status quo, a test of limits, and a deep dive into the untold performance gap between the CPU and GPU. My mission? Strip the GPU of all computation duties and still achieve buttery-smooth performance.
-
+What if the CPU handled it all? That question guided my approach as I set out to design a custom circular indicator—computed entirely on the CPU. Every point was calculated manually, with the GPU used strictly for rendering. No framework shortcuts. No hardware acceleration for logic. The goal was clear: to explore the boundaries of CPU-based geometry processing and measure its viability in performance-critical, graphics-driven applications.
+This was more than a technical exercise—it was a deliberate investigation into the capabilities of modern mobile processors under intensive graphical workloads. By offloading all computational tasks from the GPU, I aimed to better understand the real-world performance trade-offs and challenge conventional assumptions about rendering pipelines in UI frameworks.
 ## The Challenge
 
 The main challenge was maintaining performance while handling thousands, hundreds of thousands, or even millions of points—depending on the UI or screen. Optimization was key.
@@ -175,7 +175,6 @@ This was tested on the Qualcomm Snapdragon 865 (considered a high-end processor 
      - As a result, the total animation time equals: expected animation duration + time to repeat dropped frames.
    - This workaround helps maintain the visual completeness of the animation, though it may slightly affect timing precision.
 
-   In the end the CPU only takes the half of the wheel. This gap is gonna be small in the future due to the development of CPUs. In the era of quantum computing we may not need GPUs.
 ## Why Do We Even Have a GPU?
 
 We all know the answer: the GPU complements the CPU by handling tasks the CPU isn't optimized for. I was shocked by the poor performance before I made the optimization. When using the custom painter canvas to draw a circular indicator with animation, the canvas not saving the previous drawing so each frame the canvas clears its content and starts drawing again. That’s ok if we use canvas methods which are estimating the point in the GPU, as the estimation on the GPU is very fast because of parallel processing. In the CPU, we send the points to the canvas, and the canvas uses `drawPoint` or `drawRawPoint`, which are not optimal for drawing a large number of points, even on the GPU because the GPU draws each point one by one, and the mechanics that the GPU follows to draw is different and makes it slower.

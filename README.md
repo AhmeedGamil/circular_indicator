@@ -149,10 +149,10 @@ Future<void> saveCanvasToImage(Size size) async {
 
 ## Result
 
-I successfully achieved smooth animation for the circular indicator! (Note: The preview is a GIF, so it may not appear smooth due to the format’s limitations.)
-
-![Circular Indicator Animation](circular_indicator.gif)
-
+I successfully achieved smooth animation for the circular indicator! (Note: The preview is a GIF, so it may not appear smooth due to the format’s limitations)
+<p align="center">
+  <img src="circular_indicator.gif" alt="Result" />
+</p>
 This was tested on the Qualcomm Snapdragon 865 (considered a high-end processor in 2020) and the MediaTek Helio G80 (considered a mid-range processor in 2020), and both ran smoothly at 60 fps.
 ## Considerations
 
